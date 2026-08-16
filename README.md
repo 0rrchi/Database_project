@@ -1,158 +1,504 @@
-# Database_project
-A database-backed Teaching Assistant (TA) Recruitment &amp; Management System built for East West University using PHP, MySQL, HTML5, and CSS3. Features Role-Based Access Control (RBAC), eligibility verification, and full CRUD functionality.
+# East West University Teaching Assistant Recruitment and Management System
 
-                                                                          East West University - Teaching Assistant (TA) Management System
+A web-based **Teaching Assistant (TA) Recruitment and Management System** developed for East West University. The system is designed to streamline the TA recruitment process by allowing students to apply for TA opportunities, faculty members to recruit and manage TAs, and administrators to manage the overall system.
 
-A database-driven web application designed for East West University (EWU) to automate, organize, and streamline the Teaching Assistant (TA) recruitment, application, and selection process.
-Built as the final project for CSE302: Database Systems.
+---
 
- Project Overview & Purpose 
- 
-In standard academic environments, managing Teaching Assistant recruitment manually via emails or physical forms creates disorganization, security risks, and tracking issues.
-This system solves that by providing a centralized web platform supporting three distinct user roles (Admin, Faculty, and Student) , each governed by strict Role-Based Access Control (RBAC) and database integrity constraints.
-Note on Administration: Unlike students and faculty who register or activate accounts via the web portal, admin user accounts are pre-seeded directly into the MySQL database during system setup. Administrators must log in using these pre-configured database credentials to begin managing system data.
- Key Features
- 
- 1. Administrator Module
-Pre-Seeded Access: Admin credentials (ID and Password) are inserted directly into the database during initial setup, bypassing public user registration.
-System Management (CRUD): Full Create, Read, Update, and Delete capabilities for Departments, Courses, Faculty, and Students.
-Faculty-Course Assignment: Assigns courses to specific faculty members for specific terms/semesters.
-Student Course Records: Enters completed course records and grades for students (used for TA prerequisite verification).
-System Overview: Live metric dashboard displaying total registered students, faculty, courses, departments, and pending TA applications.
+## 📌 Project Overview
 
- 2. Faculty Module
-Recruitment Control: Toggle recruitment status (RecruitingTA = TRUE / FALSE) to open or close applications.
-Application Review: View student applicants along with their CGPA, department, and uploaded documents (CV and Cover Letter).
-Automated Selection: Accepting a TA automatically:
-Sets application status to Accepted.
-Closes the faculty's recruitment status.
-Rejects the student's other pending applications across the system.
-Profile Management: Update personal contact email and password.
+The **EWU TA Management System** provides a centralized platform for managing the Teaching Assistant recruitment process.
 
- 3. Student Module
-Account Activation: Secure account activation using Student ID and institutional email.
-Prerequisite Verification: Dynamic eligibility checking ensuring students can only apply if:
-Their CGPA ≥ 3.50.
-They have successfully completed all courses taught by the faculty member.
-Application Tracker: Submit PDF resumes/cover letters and monitor application status (Pending, Accepted, Rejected) in real-time.
- 
- Tools & Technologies Used
-Frontend: HTML5, CSS3 (Flexbox & CSS Grid)
-Backend: PHP (PHP 8.x) with MySQLi Prepared Statements
-Database: MySQL (Relational Schema with Foreign Keys, Cascades, & Unique Constraints)
-Environment: XAMPP (Apache Web Server & MySQL Database)
+The system supports multiple types of users and provides role-based access to different parts of the application.
 
+### Main Users
 
-                                                                            How the System Works (Complete User Flow)
-1. Account Creation & Activation Flow
+* **Admin**
+* **Student**
+* **Faculty**
+* **Committee Member**
 
-[Admin creates Student/Faculty Profile]
-                 │
-                 ▼
-[Student/Faculty goes to activate_student.php / activate_faculty.php]
-                 │
-                 ▼
-[Enters ID & Institutional Email] ──(Verifies Match)──► [Sets Password & IsActivated = 1]
-                                                                 │
-                                                                 ▼
-                                                        [Redirects to login.php]
+The home page describes the system as a platform where students can apply for Teaching Assistant positions, faculty members can recruit TAs, and administrators can manage the recruitment process.
 
+---
 
+## ✨ Features
 
+### 👨‍🎓 Student
 
-2. Login & Security Verification Flow (RBAC)
+Students can:
 
-[User enters ID & Password on login.php]
-                 │
-                 ▼
-[Checks Admin ➔ Student ➔ Faculty Tables]
-                 │
-                 ▼
-[Verifies Credentials & Session Variables: $_SESSION['user_id'] & $_SESSION['user_type']]
-                 │
-                 ▼
-[Redirects to Role Dashboard (admin/dashboard.php, faculty/dashboard.php, or student/dashboard.php)]
+* Activate their university account
+* Log in using their University ID and password
+* Access the student dashboard
+* Apply for TA positions
+* Submit a resume
+* Submit a cover letter
+* Track their TA applications
+* Have their eligibility determined based on completed courses
 
+## Student accounts contain an `IsActivated` status, and an inactive account cannot access the student dashboard.
 
-Security Enforcement: Every protected page enforces $required_role. If a student or faculty attempts to manually alter the URL to access an admin page, includes/session.php intercepts the request, blocks execution, and safely redirects them back.
-3. Application & Selection Flow
-[Faculty opens recruitment flag]
-                 │
-                 ▼
-[Student applies via student/apply_ta.php]
-   ├── Checks CGPA >= 3.50
-   ├── Verifies completion of all courses taught by faculty
-   └── Submits CV and Cover Letter (PDF)
-                 │
-                 ▼
-[Faculty reviews in faculty/view_applications.php]
-                 │
-                 ├──► [If Rejected] ──► Status updated to 'Rejected'
-                 │
-                 └──► [If Accepted (Database Transaction)]
-                        ├── 1. Application Status set to 'Accepted'
-                        ├── 2. Faculty RecruitingTA flag set to FALSE
-                        └── 3. Student's other pending applications set to 'Rejected'
+### 👨‍🏫 Faculty
 
+Faculty members can:
 
+* Activate their university account
+* Log in using their Faculty ID
+* Access the faculty dashboard
+* Recruit Teaching Assistants
+* Manage TA recruitment activities
+* Receive student TA applications
 
-                                                                                  📂 Project Structure
+Faculty accounts contain an `IsActivated` field and a `RecruitingTA` field in the database.
 
+Faculty activation requires the Faculty ID and university email to match an existing faculty record.
+
+---
+
+### 👨‍💼 Admin
+
+Administrators can access the administrative section of the system.
+
+The login system identifies administrators separately and redirects authenticated administrators to:
+
+```text
+admin/dashboard.php
+```
+
+## The database also contains a dedicated `Admin` table.
+
+### 👥 Committee Member
+
+Faculty members who are registered as committee members can choose between two roles after logging in:
+
+* Continue as Faculty
+* Continue as Committee Member
+
+The system checks both whether the user is logged in and whether the user has committee-member privileges before displaying the role-selection page.
+
+---
+
+## 🔐 Authentication & Account Activation
+
+The system provides a centralized login page for:
+
+* Admin
+* Student
+* Faculty
+
+Users provide their University ID and password. The system checks the appropriate database table and redirects the user to the corresponding dashboard.
+
+### Student Activation
+
+Students can activate their accounts using:
+
+* Student ID
+* University Email
+* New Password
+
+The system verifies that the Student ID and email match an existing record before activating the account.
+
+### Faculty Activation
+
+Faculty members follow a similar process using:
+
+* Faculty ID
+* University Email
+* New Password
+
+## After successful activation, the user is redirected to the login page.
+
+## 🗄️ Database Structure
+
+The project uses a MySQL database named:
+
+```text
+ewu_ta_management
+```
+
+The database script recreates the database and defines the required tables.
+
+### Main Tables
+
+| Table            | Purpose                                           |
+| ---------------- | ------------------------------------------------- |
+| `Department`     | Stores department information                     |
+| `Admin`          | Stores administrator accounts                     |
+| `Student`        | Stores student information and account status     |
+| `Faculty`        | Stores faculty information and recruitment status |
+| `Course`         | Stores course information                         |
+| `Faculty_Course` | Associates faculty members with courses           |
+| `Student_Course` | Stores courses taken/completed by students        |
+| `TA_Application` | Stores student TA applications                    |
+
+---
+
+## 🔗 Database Relationships
+
+The database uses primary keys and foreign keys to maintain relationships between entities.
+
+### Department → Student
+
+Each student belongs to a department.
+
+### Department → Faculty
+
+Each faculty member belongs to a department.
+
+### Department → Course
+
+Each course belongs to a department.
+
+### Faculty → Faculty_Course
+
+`Faculty_Course` stores the courses taught by faculty members.
+
+### Student → Student_Course
+
+`Student_Course` stores courses completed or taken by students and is used to determine student eligibility.
+
+### Student → TA_Application
+
+A student can submit TA applications.
+
+### Faculty → TA_Application
+
+Applications are submitted directly to a faculty member.
+
+The current database design explicitly stores `StudentID` and `FacultyID` in `TA_Application`.
+
+---
+
+## 📋 TA Application
+
+The `TA_Application` table contains:
+
+* Application ID
+* Student ID
+* Faculty ID
+* Resume File
+* Cover Letter
+* Application Date
+* Application Status
+
+Application status can be:
+
+```text
+Pending
+Accepted
+Rejected
+```
+
+The database also prevents the same student from submitting duplicate applications to the same faculty member through a unique constraint on:
+
+```text
+StudentID + FacultyID
+```
+
+---
+
+## 🛠️ Technologies Used
+
+### Frontend
+
+* HTML5
+* CSS3
+* JavaScript
+
+### Backend
+
+* PHP
+
+### Database
+
+* MySQL
+
+### Development Environment
+
+* XAMPP
+* Apache
+* MySQL
+
+The PHP pages use a shared database connection through:
+
+```text
+includes/db_conn.php
+```
+
+## For example, both student and faculty account activation pages include the database connection file.
+
+## 📁 Project Structure
+
+A simplified structure of the project is:
+
+```text
 ewu_ta_management/
-├── admin/                 # Administrator dashboards and CRUD scripts
-│   ├── dashboard.php
-│   ├── manage_departments.php
-│   ├── manage_courses.php
-│   ├── manage_faculty.php
-│   └── manage_students.php
-├── faculty/               # Faculty management & review scripts
-│   ├── dashboard.php
-│   ├── my_courses.php
-│   ├── edit_profile.php
-│   └── view_applications.php
-├── student/               # Student portal & application scripts
-│   ├── dashboard.php
-│   ├── profile.php
-│   ├── edit_profile.php
-│   ├── apply_ta.php
-│   └── my_applications.php
-├── includes/              # DB connection & RBAC session handlers
+│
+├── index.php
+├── login.php
+├── logout.php
+├── choose_role.php
+├── activate_student.php
+├── activate_faculty.php
+├── test_connection.php
+├── sql.txt
+│
+├── admin/
+│   └── dashboard.php
+│
+├── student/
+│   └── dashboard.php
+│
+├── faculty/
+│   └── dashboard.php
+│
+├── committee/
+│   └── dashboard.php
+│
+├── includes/
 │   ├── db_conn.php
 │   └── session.php
-├── css/                   # Global stylesheets
+│
+├── css/
 │   └── style.css
-├── uploads/               # PDF upload storage (Resumes & Cover Letters)
-├── schema.sql             # MySQL Database Script
-├── login.php              # Central authentication portal
-├── logout.php             # Session destruction handler
-├── activate_student.php   # Student account activation
-└── activate_faculty.php   # Faculty account activation
+│
+└── ...
+```
 
+> The exact contents of the `admin`, `student`, `faculty`, `committee`, `includes`, and `css` directories may vary depending on the current project files.
 
-                                                                           Installation & Setup Instructions
-Clone the Repository:
-Bash
-git clone https://github.com/your-username/ewu-ta-management-system.git
+---
 
+## ⚙️ Installation & Setup
 
-Database Setup:
-Open phpMyAdmin or your MySQL client.
-Create a new database named ewu_ta_management.
-Import the schema.sql file provided in the project root.
-Database Configuration:
-Ensure includes/db_conn.php matches your local database credentials:
+### 1. Install XAMPP
+
+Install **XAMPP** with:
+
+* Apache
+* MySQL
+* PHP
+
+---
+
+### 2. Clone the Repository
+
+Clone the project into the XAMPP `htdocs` directory:
+
+```bash
+git clone <YOUR-GITHUB-REPOSITORY-URL>
+```
+
+Then place the project inside:
+
+```text
+C:\xampp\htdocs\
+```
+
+For example:
+
+```text
+C:\xampp\htdocs\ewu_ta_management
+```
+
+---
+
+### 3. Start XAMPP
+
+Open XAMPP Control Panel and start:
+
+```text
+Apache
+MySQL
+```
+
+---
+
+### 4. Create the Database
+
+Open:
+
+```text
+http://localhost/phpmyadmin
+```
+
+Import:
+
+```text
+sql.txt
+```
+
+The SQL script creates the database:
+
+```text
+ewu_ta_management
+```
+
+and creates the required tables.
+
+---
+
+### 5. Configure Database Connection
+
+Make sure the database connection file contains the correct MySQL configuration:
+
+```text
+includes/db_conn.php
+```
+
+The application relies on this file for database connectivity.
+
+---
+
+### 6. Test the Database Connection
+
+Open:
+
+```text
+http://localhost/ewu_ta_management/test_connection.php
+```
+
+A successful connection should display:
+
+```text
+Database Connected Successfully!
+```
+
+---
+
+## 🚀 Running the Application
+
+After starting Apache and MySQL, open:
+
+```text
+http://localhost/ewu_ta_management/
+```
+
+The home page provides navigation to:
+
+* Home
+* Login
+
+---
+
+## 🔑 Default Admin Accounts
+
+The provided SQL script contains the following administrator records:
+
+| Admin ID | Password   | Email               |
+| -------- | ---------- | ------------------- |
+| `ADM001` | `admin123` | `admin1@ewu.edu.bd` |
+| `ADM002` | `admin456` | `admin2@ewu.edu.bd` |
+
+These credentials are present in the supplied database script.
+
+> **Security Note:** These are development/demo credentials. Change them before using the application in a real environment.
+
+---
+
+## 🔄 Basic System Workflow
+
+```text
+                    ┌──────────────────┐
+                    │      Home Page   │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │      Login       │
+                    └────────┬─────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+              ▼              ▼              ▼
+          Admin          Student         Faculty
+              │              │              │
+              ▼              ▼              ▼
+       Admin Dashboard  Student Dashboard Faculty Dashboard
+                             │              │
+                             │              │
+                             ▼              ▼
+                       Apply for TA    Recruit TA
+                             │              │
+                             └──────┬───────┘
+                                    ▼
+                              TA Application
+                                    │
+                                    ▼
+                              Pending / Accepted /
+                                 Rejected
+```
+
+---
+
+## 🔒 Session & Logout
+
+The application uses PHP sessions for authentication and role management.
+
+The logout functionality destroys the current session and redirects the user to the login page.
+
+Role-based pages also perform session checks before allowing access. For example, the committee role-selection page verifies that a user is logged in and has committee privileges.
+
+---
+
+## 🎯 Project Objectives
+
+The main objectives of the system are to:
+
+* Digitize the TA recruitment process
+* Provide a centralized TA application platform
+* Allow students to apply for TA opportunities
+* Allow faculty members to recruit TAs
+* Allow administrators to manage the system
+* Implement role-based access
+* Maintain TA applications in a relational database
+* Reduce manual TA recruitment procedures
+
+---
+
+## 🔮 Future Improvements
+
+Possible future improvements include:
+
+* Password hashing using `password_hash()`
+* Password reset functionality
+* Email notifications
+* Advanced application filtering
+* Faculty application review interface
+* TA assignment tracking
+* Application deadline management
+* Improved admin reporting
+* Dashboard statistics and charts
+* File validation for resumes
+* Improved security and input validation
+* Responsive UI improvements
+* Deployment to a production server
+
+---
+
+## 👨‍💻 Development
+
+This project was developed as an **East West University Teaching Assistant Recruitment and Management System**.
+
+### Core Technologies
+
+```text
 PHP
-$host = "localhost";
-$user = "root";
-$pass = "";
-$dbname = "ewu_ta_management";
+MySQL
+HTML
+CSS
+JavaScript
+XAMPP
+```
 
+---
 
-Run the Project:
-Move the project folder into your web server directory (htdocs for XAMPP).
-Open your browser and navigate to:
-Plaintext
-http://localhost/ewu_ta_management/login.php
+## 📄 License
 
+This project is intended for educational and academic purposes.
 
+---
 
+## 🙏 Acknowledgment
+
+Developed for **East West University** to demonstrate the design and implementation of a web-based Teaching Assistant recruitment and management system.
