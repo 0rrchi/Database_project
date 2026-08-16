@@ -325,7 +325,7 @@ http://localhost/phpmyadmin
 Import:
 
 ```text
-sql.txt
+ewu_ta_management.sql
 ```
 
 The SQL script creates the database:
